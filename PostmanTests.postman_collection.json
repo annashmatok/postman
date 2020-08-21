@@ -1,0 +1,1209 @@
+{
+	"info": {
+		"_postman_id": "3b055a78-7bce-4d63-9534-4a41e7ef6ee7",
+		"name": "PostmanTests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1.Registration",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "32023612-fc87-4e81-9acb-8e80fd28e1a3",
+						"exec": [
+							"//Use dynamic variable to create full name",
+							"postman.setEnvironmentVariable('name', pm.variables.replaceIn('{{$randomFullName}}'));",
+							"console.log(\"New user name is :\" +environment.name);",
+							"",
+							"//Create login from name",
+							"postman.setEnvironmentVariable('login', environment.name.replace(/ /g, \"\").toLowerCase());",
+							"console.log(\"New login is :\" +environment.login);",
+							"",
+							"//Generate new password",
+							"postman.setEnvironmentVariable('password', generatePassword());",
+							"console.log(\"New password is :\" + environment.password);",
+							"",
+							"function generatePassword() {",
+							"    var length = 10,",
+							"        charset = \"!@#$%^&*()abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\",",
+							"        returnVal = \"\";",
+							"    for (var i = 0, n = charset.length; i < length; ++i) {",
+							"        returnVal += charset.charAt(Math.floor(Math.random() * n));",
+							"    }",
+							"    return returnVal;",
+							"}",
+							"",
+							"//Use dynamic variable to create avater url",
+							"postman.setEnvironmentVariable('avatarUrl', pm.variables.replaceIn('{{$randomAvatarImage}}'));",
+							"console.log(\"New avatar URL is :\" + environment.avatarUrl);",
+							"",
+							"//Use dynamic variable to create url",
+							"postman.setEnvironmentVariable('userURL', pm.variables.replaceIn('{{$randomUrl}}'));",
+							"console.log(\"New URL is :\" + environment.url);",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "c0b09b1e-7e63-4277-aaa9-00360bc2b28c",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var request = JSON.parse(request.data);",
+							"var status = pm.response.status;",
+							"var httpCode = responseCode.code;",
+							"var id = jsonData.data.id;",
+							"var controllerType = jsonData.data.type;",
+							"var login = jsonData.data.attributes.login;",
+							"var avatarUrl = jsonData.data.attributes[\"avatar-url\"]; ",
+							"// var avatarUrl = jsonData.data.attributes.avatar-url; ",
+							"// console.log(\"TEST \"+avatarUrl);",
+							"var url = jsonData.data.attributes.url;",
+							"var name = jsonData.data.attributes.name;",
+							"postman.setEnvironmentVariable('login', login);",
+							"postman.setEnvironmentVariable('userID', id);",
+							"",
+							"",
+							"tests[\"user id is present\"] = !_.isEmpty(id);",
+							"tests[\"valid controller type is returned\"] = controllerType === \"users\";",
+							"tests[\"valid login returned\"] = login === environment.login;",
+							"tests[\"valid avatar Url returned\"] = avatarUrl === environment.avatarUrl;",
+							"tests[\"valid Url returned\"] = url === environment.userURL;",
+							"tests[\"valid name returned\"] = name === environment.name;",
+							"tests[\"valid http code\"] = httpCode === 201;",
+							"tests[\"Response has a valid status\"] = status ===\"Created\";",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\"attributes\": {\n\t\t\t\"login\": \"{{login}}\",\n\t\t\t\"password\": \"{{password}}\",\n\t\t\t\"avatar_url\": \"{{avatarUrl}}\", \n\t\t\t\"url\": \"{{userURL}}\",\n            \"name\": \"{{name}}\"\n\t\t}\n\t}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/sign_up",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"sign_up"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2.Registration (existing user)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "c5b4ebe7-6e6f-4b48-867f-a56114aa4be8",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "9b26d00d-8580-443f-a500-2d8f8d3a7a45",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"var error = jsonData.errors[0].detail;",
+							"",
+							"tests[\"valid error eg.1\"] = error === \"has already been taken\";",
+							"tests[\"valid error eg.2\"] = responseBody.has(\"has already been taken\");",
+							"tests[\"valid http code\"] = httpCode === 422;",
+							"tests[\"Response has a valid status\"] = status ===\"Unprocessable Entity\";",
+							"",
+							"postman.clearEnvironmentVariable(\"name\");",
+							"postman.clearEnvironmentVariable(\"userURL\");",
+							"postman.clearEnvironmentVariable(\"avatarUrl\");",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\"attributes\": {\n\t\t\t\"login\": \"{{login}}\",\n\t\t\t\"password\": \"{{password}}\",\n\t\t\t\"avatar_url\": \"{{avatarUrl}}\", \n\t\t\t\"url\": \"{{userURL}}\",\n            \"name\": \"{{name}}\"\n\t\t}\n\t}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/sign_up",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"sign_up"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3.Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a2b54ced-a68c-4bdf-adf8-304622e88d46",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var request = JSON.parse(request.data);",
+							"var status = pm.response.status;",
+							"var httpCode = responseCode.code;",
+							"var id = jsonData.data.id;",
+							"var controllerType = jsonData.data.type;",
+							"var token = jsonData.data.attributes.token;",
+							"",
+							"",
+							"tests[\"token id is present\"] = !_.isEmpty(id);",
+							"tests[\"valid controller type is returned\"] = controllerType === \"access-tokens\";",
+							"tests[\"token is returned\"] = !_.isEmpty(token) ;",
+							"tests[\"valid http code\"] = httpCode === 201;",
+							"tests[\"Response has a valid status\"] = status ===\"Created\";",
+							"",
+							"postman.setEnvironmentVariable('token', token);",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\"attributes\": {\n\t\t\t\"login\": \"{{login}}\",\n\t\t\t\"password\": \"{{password}}\"\n\t\t}\n\t}\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4.Login (invalid user)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a2b54ced-a68c-4bdf-adf8-304622e88d46",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var request = JSON.parse(request.data);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"var exception = jsonData.errors[0].title;",
+							"var message = jsonData.errors[0].detail;",
+							"",
+							"tests[\"valid http code\"] = httpCode === 401;",
+							"tests[\"Response has a valid status\"] = status ===\"Unauthorized\";",
+							"tests[\"valid error title\"] = exception === \"Invalid login or password\";",
+							"tests[\"valid error message\"] = message === \"You must provide valid credentials in order to exchange them for token.\";",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\"attributes\": {\n\t\t\t\"login\": \"login\",\n\t\t\t\"password\": \"{{password}}\"\n\t\t}\n\t}\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5.getArticlesCount",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "60661e75-8c2c-4c38-ae6a-5c2ac08d85ec",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"",
+							"//get number of articles in response body",
+							"var array = jsonData.data;",
+							"var articlesPerRequest = _.size(array);",
+							"",
+							"//get last article id",
+							"var array = jsonData.data;",
+							"var id = array[0].id;",
+							"",
+							"postman.setEnvironmentVariable('articleID', id);",
+							"",
+							"",
+							"tests[\"number of articles in response should be less or equal 25\"] = articlesPerRequest <= 25;",
+							"tests[\"valid http code\"] = httpCode === 200;",
+							"tests[\"Status is valid \"] = status ===\"OK\";"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/articles",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"articles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6.newArticle",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "fba6e515-6697-42b7-a427-7f009bf95950",
+						"exec": [
+							"//generate new title using dynamic variables",
+							"postman.setEnvironmentVariable('title', pm.variables.replaceIn('{{$randomWord}}' + ' ' + '{{$randomWord}}'));",
+							"console.log(\"title is: \" + environment.title);",
+							"",
+							"//create slug by replacing title \" \" with \"-\"",
+							"postman.setEnvironmentVariable('slug', environment.title.replace(/ /g, \"-\").toLowerCase());",
+							"console.log(\"slug is: \" + environment.slug);",
+							"",
+							"//cleate article content ",
+							"postman.setEnvironmentVariable('content', pm.variables.replaceIn('{{$randomWords}}{{$randomWords}}{{$randomWords}}{{$randomWords}}{{$randomWords}}{{$randomWords}}'));",
+							"console.log(\"content is: \" + environment.content);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "02627da2-99de-4944-8768-98a12fee6830",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"var articleID = jsonData.data.id;",
+							"var controllerType = jsonData.data.type;",
+							"var articleTitle = jsonData.data.attributes.title;",
+							"var articleContent = jsonData.data.attributes.content;",
+							"var slug = jsonData.data.attributes.slug;",
+							"",
+							"tests[\"id is present\"] = !_.isEmpty(articleID);",
+							"tests[\"valid controller type is returned\"] = controllerType === \"articles\";",
+							"tests[\"title is not empty\"] = articleTitle.length > 0 && articleTitle !== null;",
+							"tests[\"content is not empty\"] = articleContent.length !== 0 && articleContent !== null;",
+							"tests[\"slug is not empty\"] = slug.length !== 0 && slug !== null;",
+							"",
+							"tests[\"valid title returned\"] = articleTitle ===  environment.title;",
+							"tests[\"valid title returned\"] = articleContent === environment.content;",
+							"tests[\"valid title returned\"] = slug === environment.slug;",
+							"",
+							"tests[\"valid http code\"] = httpCode === 201;",
+							"tests[\"Status is valid \"] = status ===\"Created\";",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\t\"type\": \"articles\",\n\t\t\t\"attributes\": {\n\t\t\t\t\"title\": \"{{title}}\",\n\t\t\t\t\"content\": \"{{content}}\",\n\t\t\t\t\"slug\": \"{{slug}}\"\n\t\t\t}\n\t}\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/articles",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"articles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7.newArticle (no token)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "63f5e83a-2f42-428c-9c5e-addcc008e181",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"var request = JSON.parse(request.data);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"var exception = jsonData.errors[0].title;",
+							"var message = jsonData.errors[0].detail;",
+							"",
+							"tests[\"valid http code\"] = httpCode === 403;",
+							"tests[\"Response has a valid status\"] = status ===\"Forbidden\";",
+							"tests[\"valid error title\"] = exception === \"Not authorized\";",
+							"tests[\"valid error message\"] = message === \"You have no right to access this resource.\";",
+							"",
+							"postman.clearEnvironmentVariable(\"title\");",
+							"postman.clearEnvironmentVariable(\"content\");",
+							"postman.clearEnvironmentVariable(\"slug\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\t\"type\": \"articles\",\n\t\t\t\"attributes\": {\n\t\t\t\t\"title\": \"{{title}}\",\n\t\t\t\t\"content\": \"{{content}}\",\n\t\t\t\t\"slug\": \"{{slug}}\"\n\t\t\t}\n\t}\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/articles",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"articles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "8.ArticlesCount Incremented +1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "60661e75-8c2c-4c38-ae6a-5c2ac08d85ec",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"",
+							"//get number of articles",
+							"var array = jsonData.data;",
+							"var articleID = array[0].id;",
+							"",
+							"tests[\"article ID incremented by 1\"] = parseInt(articleID) === parseInt(environment.articleID)+1;",
+							"tests[\"valid http code\"] = httpCode === 200;",
+							"tests[\"Status is valid \"] = status ===\"OK\";",
+							"",
+							"postman.setEnvironmentVariable('articleID', array[0].id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/articles",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"articles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9.newComment",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "a5bc9b00-dcbe-45b9-bd5a-e2fa8c6240bf",
+						"exec": [
+							"//generate new title using dynamic variables",
+							"postman.setEnvironmentVariable('title', pm.variables.replaceIn('{{$randomWord}}' + ' ' + '{{$randomWord}}'));",
+							"console.log(\"title is: \" + environment.title);",
+							"",
+							"//create slug by replacing title \" \" with \"-\"",
+							"postman.setEnvironmentVariable('slug', environment.title.replace(/ /g, \"-\").toLowerCase());",
+							"console.log(\"slug is: \" + environment.slug);",
+							"",
+							"//cleate article content ",
+							"postman.setEnvironmentVariable('content', pm.variables.replaceIn('{{$randomWords}}{{$randomWords}}{{$randomWords}}{{$randomWords}}{{$randomWords}}{{$randomWords}}'));",
+							"console.log(\"content is: \" + environment.content);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "e6ee010d-d42e-47b4-b0c6-3c27ebf16628",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"var commentID = jsonData.data.id;",
+							"var controllerType = jsonData.data.type;",
+							"var commentContent = jsonData.data.attributes.content;",
+							"var articleID = jsonData.data.relationships.article.data.id;",
+							"var relationshipType = jsonData.data.relationships.article.data.type;",
+							"var userID = jsonData.data.relationships.user.data.id;",
+							"var userType = jsonData.data.relationships.user.data.type;",
+							"postman.setEnvironmentVariable('commentID', commentID);",
+							"",
+							"//test comment",
+							"tests[\"id is present\"] = !_.isEmpty(commentID);",
+							"tests[\"valid controller type is returned\"] = controllerType === \"comments\";",
+							"tests[\"content is valid\"] = commentContent === environment.content;",
+							"tests[\"valid http code\"] = httpCode === 201;",
+							"tests[\"Status is valid \"] = status ===\"Created\";",
+							"//test relationships",
+							"tests[\"relationship id equal to article id\"] = articleID === environment.articleID;",
+							"tests[\"relationship type is articles\"] = relationshipType === \"articles\";",
+							"//test user data",
+							"tests[\"user id is valid\"] = userID === environment.userID;",
+							"tests[\"type is users\"] = userType === \"users\";",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\t\"type\": \"comments\",\n\t\t\t\"attributes\": {\n\t\t\t\t\"title\": \"{{title}}\",\n\t\t\t\t\"content\": \"{{content}}\",\n\t\t\t\t\"slug\": \"{{slug}}\"\n\t\t\t}\n\t}\n\t\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/articles/{{articleID}}/comments",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"articles",
+						"{{articleID}}",
+						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "10.getComments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2208fd23-8726-4cb4-8e79-da1649914aa3",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"var commentID = jsonData.data[0].id;",
+							"var controllerType = jsonData.data[0].type;",
+							"var commentContent = jsonData.data[0].attributes.content;",
+							"//relationships",
+							"var articleID = jsonData.data[0].relationships.article.data.id;",
+							"var relationshipType = jsonData.data[0].relationships.article.data.type;",
+							"var userID = jsonData.data[0].relationships.user.data.id;",
+							"var userType = jsonData.data[0].relationships.user.data.type;",
+							"",
+							"//test comment",
+							"tests[\"comment id is valid\"] = commentID === environment.commentID;",
+							"tests[\"valid controller type is returned\"] = controllerType === \"comments\";",
+							"tests[\"content is valid\"] = commentContent === environment.content;",
+							"tests[\"valid http code\"] = httpCode === 200;",
+							"tests[\"Status is valid \"] = status ===\"OK\";",
+							"// test relationships",
+							"tests[\"relationship id equal to article id\"] = articleID === environment.articleID;",
+							"tests[\"relationship type is articles\"] = relationshipType === \"articles\";",
+							"//test user data",
+							"tests[\"user id is valid\"] = userID === environment.userID;",
+							"tests[\"type is users\"] = userType === \"users\";",
+							"",
+							"",
+							"//Add delay between requests",
+							"// if(status ===\"OK\"){",
+							"//   setTimeout(function(){",
+							"//     console.log(\"Sleeping for 3 second before next request.\");",
+							"//   }, 3000);",
+							"//   postman.setNextRequest(\"11.dataDrivenTest\");",
+							"// }",
+							"",
+							"postman.setNextRequest(null);",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/articles/{{articleID}}/comments",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"articles",
+						"{{articleID}}",
+						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delay 3 sec",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic aXNobWF0b2s6JEltbW9ydGFsc291bDE="
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/xml"
+					}
+				],
+				"url": {
+					"raw": "https://postman-echo.com/delay/3",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "11.dataDrivenTest",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "29089b5c-ee8c-4238-a767-0e44a1da8834",
+						"exec": [
+							"try{",
+							"postman.setEnvironmentVariable(\"title\", data.articleTitle);",
+							"postman.setEnvironmentVariable(\"content\", data.articleContent);",
+							"postman.setEnvironmentVariable(\"slug\", data.articleSlug);",
+							"}catch(err){",
+							"    console.log(\"Error: \" + err + \".\");",
+							"    console.log(\"dataDrivenTest failed at prerequest\");",
+							"}",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "e36cabb0-0644-4365-9f7c-80253196e297",
+						"exec": [
+							"try{",
+							"var jsonData = JSON.parse(responseBody);",
+							"var httpCode = responseCode.code;",
+							"var status = pm.response.status;",
+							"var commentID = jsonData.data.id;",
+							"var controllerType = jsonData.data.type;",
+							"var commentContent = jsonData.data.attributes.content;",
+							"var articleID = jsonData.data.relationships.article.data.id;",
+							"var relationshipType = jsonData.data.relationships.article.data.type;",
+							"var userID = jsonData.data.relationships.user.data.id;",
+							"var userType = jsonData.data.relationships.user.data.type;",
+							"",
+							"//test comment",
+							"tests[\"id is present\"] = !_.isEmpty(commentID);",
+							"tests[\"valid controller type is returned\"] = controllerType === \"comments\";",
+							"tests[\"content is valid\"] = commentContent === environment.content;",
+							"tests[\"valid http code\"] = httpCode === 201;",
+							"tests[\"Status is valid \"] = status ===\"Created\";",
+							"//test relationships",
+							"tests[\"relationship id equal to article id\"] = articleID === environment.articleID;",
+							"tests[\"relationship type is articles\"] = relationshipType === \"articles\";",
+							"//test user data",
+							"tests[\"user id is valid\"] = userID === environment.userID;",
+							"tests[\"type is users\"] = userType === \"users\";",
+							"",
+							"} catch (err) {",
+							"    pm.test(\"This test case was failed due to the following error\", function () { throw new Error(err) });",
+							"    console.log(\"Failed request: \" + JSON.stringify(request));",
+							"    console.log(\"Failed response: \" + JSON.stringify(responseBody));",
+							"    console.log(\"Code: \" + responseCode.code);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\": {\n\t\t\t\"type\": \"articles\",\n\t\t\t\"attributes\": {\n\t\t\t\t\"title\": \"{{title}}\",\n\t\t\t\t\"content\": \"{{content}}\",\n\t\t\t\t\"slug\": \"{{slug}}\"\n\t\t\t}\n\t}\n\t\n}"
+				},
+				"url": {
+					"raw": "{{url}}/articles/{{articleID}}/comments",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"articles",
+						"{{articleID}}",
+						"comments"
+					]
+				},
+				"description": "responce values validation"
+			},
+			"response": []
+		},
+		{
+			"name": "12.mockTest",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f77e90b9-dd4d-4997-9ae0-f741dfd37ffc",
+						"exec": [
+							"try{",
+							"var response = JSON.parse(responseBody);",
+							"var actualResponse = JSON.stringify(response)",
+							"var httpCode = responseCode.code;",
+							"",
+							"//Tests",
+							"tests[\"valid response\"] = actualResponse === environment.expectedResponse; ",
+							"tests[\"Valid status code\"] = httpCode === 200;  ",
+							"tests[\"Response time is less than 1000ms\"] = responseTime <= 1000; ",
+							"",
+							"//clear env. variables",
+							"pm.environment.clear()",
+							"}catch(err){",
+							"    console.log(\"Error: \" + err + \".\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e58a2d60-b9c1-44fa-bf23-f09b8fa5804e",
+						"exec": [
+							"var expected = JSON.stringify({",
+							"    \"data\": {",
+							"        \"id\": \"52\",",
+							"        \"type\": \"users\",",
+							"        \"attributes\": {",
+							"            \"login\": \"laurinemoore\",",
+							"            \"avatar-url\": \"https://s3.amazonaws.com/uifaces/faces/twitter/nsamoylov/128.jpg\",",
+							"            \"url\": \"https://elouise.org\",",
+							"            \"name\": \"Laurine Moore\"",
+							"        }",
+							"    }",
+							"});",
+							"",
+							"postman.setEnvironmentVariable('expectedResponse', expected);",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic aXNobWF0b2s6JEltbW9ydGFsc291bDE="
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json"
+					},
+					{
+						"key": "",
+						"value": ""
+					}
+				],
+				"url": {
+					"raw": "https://edd2b2d4-260b-4442-84b7-5dc7f8a7dc27.mock.pstmn.io",
+					"protocol": "https",
+					"host": [
+						"edd2b2d4-260b-4442-84b7-5dc7f8a7dc27",
+						"mock",
+						"pstmn",
+						"io"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "mockTest",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic aXNobWF0b2s6JEltbW9ydGFsc291bDE="
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "x-api-key",
+								"value": "2e9f76de98034733ab19c7028e057537"
+							}
+						],
+						"url": {
+							"raw": "https://edd2b2d4-260b-4442-84b7-5dc7f8a7dc27.mock.pstmn.io",
+							"protocol": "https",
+							"host": [
+								"edd2b2d4-260b-4442-84b7-5dc7f8a7dc27",
+								"mock",
+								"pstmn",
+								"io"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=utf-8"
+						},
+						{
+							"key": "Date",
+							"value": "Fri, 27 Sep 2019 17:02:56 GMT"
+						},
+						{
+							"key": "ETag",
+							"value": "W/\"52-6ejlPnqkKTdIysbPccmJFM4zSpA\""
+						},
+						{
+							"key": "Server",
+							"value": "nginx"
+						},
+						{
+							"key": "Vary",
+							"value": "Accept-Encoding"
+						},
+						{
+							"key": "x-srv-span",
+							"value": "v=1;s=95fdb547dd5abf22"
+						},
+						{
+							"key": "x-srv-trace",
+							"value": "v=1;t=95c85d126ac1b1e5"
+						},
+						{
+							"key": "Content-Length",
+							"value": "82"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"data\": {\n        \"id\": \"52\",\n        \"type\": \"users\",\n        \"attributes\": {\n            \"login\": \"laurinemoore\",\n            \"avatar-url\": \"https://s3.amazonaws.com/uifaces/faces/twitter/nsamoylov/128.jpg\",\n            \"url\": \"https://elouise.org\",\n            \"name\": \"Laurine Moore\"\n        }\n    }\n}"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "00edbbe7-9ec9-4edc-b048-54887974ae45",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "db260f80-8eab-4bdb-b228-293eead707b7",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
