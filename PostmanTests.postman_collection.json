@@ -1181,6 +1181,26 @@
 					"body": "{\n    \"data\": {\n        \"id\": \"52\",\n        \"type\": \"users\",\n        \"attributes\": {\n            \"login\": \"laurinemoore\",\n            \"avatar-url\": \"https://s3.amazonaws.com/uifaces/faces/twitter/nsamoylov/128.jpg\",\n            \"url\": \"https://elouise.org\",\n            \"name\": \"Laurine Moore\"\n        }\n    }\n}"
 				}
 			]
+		},
+		{
+			"name": "new test",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://postman-echo.com/delay/3",
+					"protocol": "https",
+					"host": [
+						"postman-echo",
+						"com"
+					],
+					"path": [
+						"delay",
+						"3"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
