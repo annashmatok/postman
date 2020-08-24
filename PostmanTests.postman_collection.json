@@ -71,7 +71,7 @@
 							"",
 							"",
 							"tests[\"user id is present\"] = !_.isEmpty(id);",
-							"tests[\"valid controller type is returned\"] = controllerType === \"users\";",
+							"tests[\"valid controller type is returned\"] = controllerType === \"sers\";",
 							"tests[\"valid login returned\"] = login === environment.login;",
 							"tests[\"valid avatar Url returned\"] = avatarUrl === environment.avatarUrl;",
 							"tests[\"valid Url returned\"] = url === environment.userURL;",
